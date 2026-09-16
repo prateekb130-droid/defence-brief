@@ -1,5 +1,5 @@
 import feedparser, os, smtplib
-import google.generativeai as genai
+from google import genai
 from email.mime.text import MIMEText
 from datetime import datetime
 
@@ -23,8 +23,7 @@ def get_news():
     return data
 
 def summarize(news):
-    genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
     prompt = f"""You are an Indian defence analyst. Create a morning brief for {datetime.now().date()}.
 
 From this raw news, give:
@@ -36,7 +35,11 @@ Keep it crisp, military briefing style.
 
 Raw news:
 {news}"""
-    return model.generate_content(prompt).text
+    response = client.models.generate_content(
+        model="gemini-3.5-flash",
+        contents=prompt
+    )
+    return response.text
 
 def send_email(body):
     html = f"<pre style='font-family: Arial; white-space: pre-wrap;'>{body}</pre>"
